@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+<form method="POST">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <div class="captcha-container">
+        <span class="captcha-label">{{ captcha }}</span>
+        <input type="text" name="captcha" placeholder="Result" required>
+    </div>
+    <button type="submit">Login</button>
+</form>
+<p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+{% endblock %}
