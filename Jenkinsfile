@@ -1,20 +1,16 @@
 pipeline {
-    agent any
+    agent any 
     environment {
-        // Optional: DockerHub credentials if you plan to push later
-        DOCKERHUB_CREDENTIALS = credentials('test1')
+        DOCKERHUB_CREDENTIALS = credentials('test1') // Your Jenkins credential ID
     }
     stages {
         stage('Build Docker image') {
-            steps {
+            steps {  
                 echo "Building Docker image..."
-                sh 'docker build -t event-planner-app:$BUILD_NUMBER .'
+                sh 'docker build -t karunya1203/event-planner:$BUILD_NUMBER .'
             }
         }
-        stage('Optional: Login to DockerHub') {
-            when {
-                expression { return false } // Change to true if you want to push to DockerHub
-            }
+        stage('Login to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'test1', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                     echo "Logging in to Docker Hub..."
@@ -22,32 +18,30 @@ pipeline {
                 }
             }
         }
-        stage('Optional: Push image to DockerHub') {
-            when {
-                expression { return false } // Change to true if you want to push
-            }
+        stage('Push image') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
-                sh 'docker push event-planner-app:$BUILD_NUMBER'
+                sh 'docker push karunya1203/event-planner:$BUILD_NUMBER'
             }
         }
         stage('Deploy to Staging') {
             steps {
-                echo "Deploying container..."
-                
+                // Pull the latest image from Docker Hub
+                sh 'docker pull karunya1203/event-planner:$BUILD_NUMBER'
+
                 // Stop and remove any existing containers
                 sh 'docker stop event-planner-container || true'
                 sh 'docker rm event-planner-container || true'
 
-                // Run the new container
-                sh 'docker run -d --name event-planner-container -p 8080:8080 event-planner-app:$BUILD_NUMBER'
+                // Run the new container with the latest image
+                sh 'docker run -d --name event-planner-container -p 8080:8080 karunya1203/event-planner:$BUILD_NUMBER'
             }
         }
     }
     post {
         always {
-            echo "Cleaning up..."
-            sh 'docker logout || true'
+            echo "Logging out from Docker Hub..."
+            sh 'docker logout'
         }
     }
 }
